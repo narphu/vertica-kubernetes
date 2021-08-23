@@ -58,11 +58,11 @@ commands:
     ignoreFailure: true
   - command: kubectl create namespace kuttl-e2e-communal
   - command: kubectl krew update
-  - command: kubectl krew install minio
-  - command: kubectl minio init
-  - command: kubectl apply -f tests/manifests/minio/01-creds.yaml -n kuttl-e2e-communal
-  - command: kubectl apply -f tests/manifests/minio/02-tenant.yaml -n kuttl-e2e-communal
-  - command: scripts/wait-for-minio.sh -n kuttl-e2e-communal
+  #- command: kubectl krew install minio
+  #- command: kubectl minio init
+  #- command: kubectl apply -f tests/manifests/minio/01-creds.yaml -n kuttl-e2e-communal
+  #- command: kubectl apply -f tests/manifests/minio/02-tenant.yaml -n kuttl-e2e-communal
+  #- command: scripts/wait-for-minio.sh -n kuttl-e2e-communal
 
   # We use stern to collect the pod output of any test that creates a pod with
   # the 'stern=include' label.  By default, the output of this is stored in a

@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Pod to create a bucket in minio
+# Pod to delete a bucket in minio
 apiVersion: v1
 kind: Pod
 metadata:
@@ -23,7 +23,7 @@ spec:
   - name: aws
     image: amazon/aws-cli
     command:
-        ["bash", "-c", "aws s3 rm --recursive --endpoint $S3_EP s3://$S3_BUCKET"]
+        ["bash", "-c", "aws s3 rb --endpoint $S3_EP s3://$S3_BUCKET --force"]
     env:
       - name: S3_BUCKET
         value: $(S3_BUCKET)

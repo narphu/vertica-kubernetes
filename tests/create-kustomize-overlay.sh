@@ -47,6 +47,15 @@ while getopts "hvl:" opt; do
         l)
             LICENSE=$OPTARG
             ;;
+        b)  
+            S3_BUCKET=$OPTARG
+            ;;
+        e)
+            S3_EP=$OPTARG
+            ;;
+        s)  
+            S3_CREDS=$OPTARG
+            ;;
         \?)
             echo "Unknown option: -${opt}"
             usage
@@ -71,6 +80,16 @@ if [ -n "$LICENSE" ]; then
     echo "Using license name: $LICENSE"
 fi
 
+if [ -z "$S3_BUCKET" ]; then
+    CUSTOM_STORAGE=true
+    if [ -z "$S3_EP" ] || [ -z "$S3_CREDS"]; then
+        echo "Please enter ENDPOINT and S3 Credential Secret"
+        exit 1
+    fi
+else
+    CUSTOM_STORAGE=false
+fi
+
 function create_kustomization {
     BASE_DIR=$1
     echo "" > kustomization.yaml
@@ -88,6 +107,19 @@ function create_kustomization {
           value: $LICENSE
 EOF
         kustomize edit add patch --path $LICENSE_PATCH_FILE --kind VerticaDB --version v1beta1 --group vertica.com
+    fi
+
+    # If S3 bucket was specified we create a patch file to set that.
+    if [[ -n "$CUSTOM_STORAGE" ]]
+    then
+        kustomize edit set communal kustomize-communal-path=$S3_BUCKET
+        kustomize edit set communal kustomize-communal-endpoint=$S3_EP
+        kustomize edit set communal kustomize-credential-secret=$S3_CREDS
+
+        sed -i "s/kustomize-communal-path/${S3_BUCKET}/g" e2e-custom-storage/webhook/50-assert.yaml
+        sed -i "s/kustomize-communal-endpoint/${S3_EP}/g" e2e-custom-storage/webhook/55-assert.yaml
+        sed -i "s/kustomize-credential-secret/${S3_CREDS}/g" e2e-custom-storage/webhook/100-assert.yaml
+
     fi
 }
 
@@ -166,6 +198,35 @@ EOF
     popd > /dev/null
 }
 
+function clear_s3_bucket_kustomization {
+    if [ ! -d $1 ]
+    then
+      return 0
+    fi
+
+    TC_OVERLAY=$1/clear-s3-bucket/overlay
+    mkdir -p $TC_OVERLAY
+    pushd $TC_OVERLAY > /dev/null
+    cat <<EOF > kustomization.yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../../../../manifests/clear-s3-bucket/base
+patches:
+- target:
+    version: v1
+    kind: Pod
+    name: clear-s3-bucket
+  patch: |-
+    - op: replace
+      path: "/spec/containers/0/env/0"
+      value:
+        name: S3_BUCKET
+        value: $S3_BUCKET
+EOF
+    popd > /dev/null
+}
+
 # Descend into each test and create the overlay kustomization.
 # The overlay is created in a directory like: overlay/<tc-name>
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -178,8 +239,16 @@ for tdir in manifests/*
 do
     create_pod_kustomization $tdir
 done
-for tdir in e2e/* e2e-disabled/*
-do
-    create_s3_bucket_kustomization $tdir
-    delete_s3_bucket_kustomization $tdir
-done
+if $CUSTOM_STORAGE==false;
+then
+    for tdir in e2e/* e2e-disabled/*
+    do
+        create_s3_bucket_kustomization $tdir
+        delete_s3_bucket_kustomization $tdir
+    done
+else
+    for tdir in e2e/* e2e-disabled/*
+    do
+        clear_s3_bucket_kustomization $tdir
+    done
+fi

@@ -16,3 +16,10 @@ images:
     kind: VerticaDB
   - path: spec/sidecars/image
     kind: VerticaDB
+communal-info:
+  - path: spec/communal/path
+    kind: VerticaDB
+  - path: spec/communal/endpoint
+    kind: VerticaDB
+  - path: spec/communal/credentialSecret
+    kind: VerticaDB
