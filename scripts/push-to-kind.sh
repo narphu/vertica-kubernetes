@@ -80,7 +80,7 @@ if [ $(( $# - $OPTIND )) -lt 0 ]
 then
     # Typical kind cluster name is something like: kind-matt1
     # We only want what is after 'kind-'
-    CLUSTER_NAME=$(kubectl config current-context | cut -d"-" -f2)
+    CLUSTER_NAME=$(kubectl config current-context | cut -b6-)
 else
     CLUSTER_NAME=${@:$OPTIND:1}
 fi
