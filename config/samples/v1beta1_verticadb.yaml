@@ -21,5 +21,6 @@ spec:
     path: "s3://nimbusdb/db"
     endpoint: "http://minio"
     credentialSecret: s3-auth
+    includeUIDInPath: true
   subclusters:
     - name: defaultsubcluster

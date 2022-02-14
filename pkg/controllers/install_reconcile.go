@@ -35,24 +35,26 @@ import (
 
 // InstallReconciler will handle reconcile for install of vertica
 type InstallReconciler struct {
-	VRec     *VerticaDBReconciler
-	Log      logr.Logger
-	Vdb      *vapi.VerticaDB // Vdb is the CRD we are acting on.
-	PRunner  cmds.PodRunner
-	PFacts   *PodFacts
-	ATWriter atconf.Writer
+	VRec           *VerticaDBReconciler
+	Log            logr.Logger
+	Vdb            *vapi.VerticaDB // Vdb is the CRD we are acting on.
+	PRunner        cmds.PodRunner
+	PFacts         *PodFacts
+	ATWriter       atconf.Writer
+	SkipAgentSetup bool
 }
 
 // MakeInstallReconciler will build and return the InstallReconciler object.
 func MakeInstallReconciler(vdbrecon *VerticaDBReconciler, log logr.Logger,
 	vdb *vapi.VerticaDB, prunner cmds.PodRunner, pfacts *PodFacts) ReconcileActor {
 	return &InstallReconciler{
-		VRec:     vdbrecon,
-		Log:      log,
-		Vdb:      vdb,
-		PRunner:  prunner,
-		PFacts:   pfacts,
-		ATWriter: atconf.MakeFileWriter(log, vdb, prunner),
+		VRec:           vdbrecon,
+		Log:            log,
+		Vdb:            vdb,
+		PRunner:        prunner,
+		PFacts:         pfacts,
+		ATWriter:       atconf.MakeFileWriter(log, vdb, prunner),
+		SkipAgentSetup: false,
 	}
 }
 
@@ -88,6 +90,7 @@ func (d *InstallReconciler) analyzeFacts(ctx context.Context) (ctrl.Result, erro
 		// reconcile function.  So if the pod is rescheduled after adding
 		// hosts to the config, we have to know that a re_ip will succeed.
 		d.addHostsToATConf,
+		d.setupForAgent,
 	}
 	for _, fn := range fns {
 		if err := fn(ctx); err != nil {
@@ -137,6 +140,123 @@ func (d *InstallReconciler) addHostsToATConf(ctx context.Context) error {
 	d.PFacts.Invalidate()
 
 	return d.createInstallIndicators(ctx, pods)
+}
+
+// nolint:funlen
+func (d *InstallReconciler) setupForAgent(ctx context.Context) error {
+	if d.SkipAgentSetup {
+		return nil
+	}
+	agentCert := `-----BEGIN CERTIFICATE-----
+MIICdDCCAd2gAwIBAgIJAIxO907aUmTcMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNV
+BAYTAlVTMRYwFAYDVQQIDA1NYXNzYWNodXNldHRzMRIwEAYDVQQHDAlCaWxsZXJp
+Y2ExGDAWBgNVBAMMD3d3dy52ZXJ0aWNhLmNvbTAeFw0yMTEyMTUyMzMzMDZaFw0z
+MTEyMTMyMzMzMDZaMFMxCzAJBgNVBAYTAlVTMRYwFAYDVQQIDA1NYXNzYWNodXNl
+dHRzMRIwEAYDVQQHDAlCaWxsZXJpY2ExGDAWBgNVBAMMD3d3dy52ZXJ0aWNhLmNv
+bTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwtDf9+IY0HflcvWyGr3fzt+O
+8ZtJQ9WJajs1yaEMmwyc5hIymlomti0xO75B5iaXKYcQqjzLfGR4Hwaf7HkdGF8X
+bJH78cGAA1ZssmA8ZIHpyktdzZMRdpR/r2pr5X2J8LFdHVBsgNWp2tEG/qi5tDc4
+kQ/waTdCeGPknKIxSu0CAwEAAaNQME4wHQYDVR0OBBYEFFFa5O8NMo53/WTAYFpm
+/aJUqDtZMB8GA1UdIwQYMBaAFFFa5O8NMo53/WTAYFpm/aJUqDtZMAwGA1UdEwQF
+MAMBAf8wDQYJKoZIhvcNAQELBQADgYEAGNUuHfkj+Zyl/JPMWhL8oWMB060N/gh5
+yZZLLG8L1pz0pRMNMjTFZldog8lreqzQsQHDBByif+rd0JCQ5uPTj2AsUOjkuDBP
+0+jaMKLfSiVsrGy8fS08wgovYb6pR+Op4coW3leGJd27pk7dwJvKoxKg2fPgCq99
+flL2CUNyIg4=
+-----END CERTIFICATE-----
+`
+	agentKey := `
+-----BEGIN RSA PRIVATE KEY-----
+MIICXwIBAAKBgQDC0N/34hjQd+Vy9bIavd/O347xm0lD1YlqOzXJoQybDJzmEjKa
+Wia2LTE7vkHmJpcphxCqPMt8ZHgfBp/seR0YXxdskfvxwYADVmyyYDxkgenKS13N
+kxF2lH+vamvlfYnwsV0dUGyA1ana0Qb+qLm0NziRD/BpN0J4Y+ScojFK7QIDAQAB
+AoGBAK81Zcitan3K5uwONoFAdRG8E/YNH8ZHPQ/ycnyFQC4OGOn+Qc5598juOhIu
+GVxhJqAtnfpNNQEJ5tKYhaoKfvPDfKwLYzpdOria8DAOrgin6cAdOJ1rCKEgdBL5
+WTIg3P+1IEH+yqyXdsUZ6NStPK9wzEcI8WqFZDtA1/WgkI8tAkEA5HSpahqzpgAB
+LpWD6u67TzWq3N9o5NH2XCjONrYT/o/vXnkrntM8mPFI1+XSMTk5UhsxGgGzvB8r
+k0fytCOrgwJBANpN6cNq41aujEHsUgoQ9QdG+q2y8L7q40hFExVQnMfiE0dPrgdi
+mqffpQh3VqGrbr+6hptMXctfjEHtrYUBNM8CQQDNPjoNxxtqoUpujYjMgdnp2a89
+a8ETAcaxGT/aS04/PxSv7XBQ6jngtbTZsfFao6xppWBBmxHciqxdTyAu0nT9AkEA
+xcdW5Tv+sXa8DbG79fC8/ZXZ4OrAYEfQGJa0HliFYjY5Px86TOiRs0vUaeIss5Xs
+ZXnpH+PFCk8LdGOQFHMuUwJBANCfIqZlPpAl6qdTiCdNZyx9Ai1nzlbvJqT3gIsg
+TD7AF93srNQghBpiuCcxOjlIzR8Rm9fGO9Nv0tZxwqs3rBE=
+-----END RSA PRIVATE KEY-----
+`
+	agentPem := `
+-----BEGIN CERTIFICATE-----
+MIICdDCCAd2gAwIBAgIJAIxO907aUmTcMA0GCSqGSIb3DQEBCwUAMFMxCzAJBgNV
+BAYTAlVTMRYwFAYDVQQIDA1NYXNzYWNodXNldHRzMRIwEAYDVQQHDAlCaWxsZXJp
+Y2ExGDAWBgNVBAMMD3d3dy52ZXJ0aWNhLmNvbTAeFw0yMTEyMTUyMzMzMDZaFw0z
+MTEyMTMyMzMzMDZaMFMxCzAJBgNVBAYTAlVTMRYwFAYDVQQIDA1NYXNzYWNodXNl
+dHRzMRIwEAYDVQQHDAlCaWxsZXJpY2ExGDAWBgNVBAMMD3d3dy52ZXJ0aWNhLmNv
+bTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAwtDf9+IY0HflcvWyGr3fzt+O
+8ZtJQ9WJajs1yaEMmwyc5hIymlomti0xO75B5iaXKYcQqjzLfGR4Hwaf7HkdGF8X
+bJH78cGAA1ZssmA8ZIHpyktdzZMRdpR/r2pr5X2J8LFdHVBsgNWp2tEG/qi5tDc4
+kQ/waTdCeGPknKIxSu0CAwEAAaNQME4wHQYDVR0OBBYEFFFa5O8NMo53/WTAYFpm
+/aJUqDtZMB8GA1UdIwQYMBaAFFFa5O8NMo53/WTAYFpm/aJUqDtZMAwGA1UdEwQF
+MAMBAf8wDQYJKoZIhvcNAQELBQADgYEAGNUuHfkj+Zyl/JPMWhL8oWMB060N/gh5
+yZZLLG8L1pz0pRMNMjTFZldog8lreqzQsQHDBByif+rd0JCQ5uPTj2AsUOjkuDBP
+0+jaMKLfSiVsrGy8fS08wgovYb6pR+Op4coW3leGJd27pk7dwJvKoxKg2fPgCq99
+flL2CUNyIg4=
+-----END CERTIFICATE-----
+-----BEGIN RSA PRIVATE KEY-----
+MIICXwIBAAKBgQDC0N/34hjQd+Vy9bIavd/O347xm0lD1YlqOzXJoQybDJzmEjKa
+Wia2LTE7vkHmJpcphxCqPMt8ZHgfBp/seR0YXxdskfvxwYADVmyyYDxkgenKS13N
+kxF2lH+vamvlfYnwsV0dUGyA1ana0Qb+qLm0NziRD/BpN0J4Y+ScojFK7QIDAQAB
+AoGBAK81Zcitan3K5uwONoFAdRG8E/YNH8ZHPQ/ycnyFQC4OGOn+Qc5598juOhIu
+GVxhJqAtnfpNNQEJ5tKYhaoKfvPDfKwLYzpdOria8DAOrgin6cAdOJ1rCKEgdBL5
+WTIg3P+1IEH+yqyXdsUZ6NStPK9wzEcI8WqFZDtA1/WgkI8tAkEA5HSpahqzpgAB
+LpWD6u67TzWq3N9o5NH2XCjONrYT/o/vXnkrntM8mPFI1+XSMTk5UhsxGgGzvB8r
+k0fytCOrgwJBANpN6cNq41aujEHsUgoQ9QdG+q2y8L7q40hFExVQnMfiE0dPrgdi
+mqffpQh3VqGrbr+6hptMXctfjEHtrYUBNM8CQQDNPjoNxxtqoUpujYjMgdnp2a89
+a8ETAcaxGT/aS04/PxSv7XBQ6jngtbTZsfFao6xppWBBmxHciqxdTyAu0nT9AkEA
+xcdW5Tv+sXa8DbG79fC8/ZXZ4OrAYEfQGJa0HliFYjY5Px86TOiRs0vUaeIss5Xs
+ZXnpH+PFCk8LdGOQFHMuUwJBANCfIqZlPpAl6qdTiCdNZyx9Ai1nzlbvJqT3gIsg
+TD7AF93srNQghBpiuCcxOjlIzR8Rm9fGO9Nv0tZxwqs3rBE=
+-----END RSA PRIVATE KEY-----
+`
+	apikeys := `[
+	{
+		"apikey": "2i8MetCw6KWoTtJNNpjm9PpcsRrNan0jCNwSGQ",
+		"app": "vertica",
+		"level": "admin",
+		"requestor": "master"
+	}
+]`
+	agentFiles := map[string]string{
+		"/opt/vertica/config/share/agent.cert": agentCert,
+		"/opt/vertica/config/share/agent.key":  agentKey,
+		"/opt/vertica/config/share/agent.pem":  agentPem,
+		"/opt/vertica/config/apikeys.dat":      apikeys,
+	}
+
+	// We are just going to blindly copy the files over.  They may exist, but we
+	// currently don't have any checking for that.
+	for _, p := range d.PFacts.Detail {
+		if !p.isPodRunning {
+			continue
+		}
+		for fn, contents := range agentFiles {
+			file, err := ioutil.TempFile("/tmp", "agentfile")
+			if err != nil {
+				return err
+			}
+			defer os.Remove(file.Name())
+
+			_, err = file.WriteString(contents)
+			if err != nil {
+				return err
+			}
+			file.Close()
+			d.Log.Info("Wrote to temporary file", "name", file.Name(), "fn", fn)
+
+			_, _, err = d.PRunner.CopyToPod(ctx, p.name, ServerContainer, file.Name(), fn)
+			if err != nil {
+				d.Log.Info("Failed trying to copy to pod", "fn", fn)
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 // acceptEulaIfMissing will accept the end user license agreement if any pods have not yet signed it

@@ -47,19 +47,27 @@ func (a *AgentReconciler) Reconcile(ctx context.Context, req *ctrl.Request) (ctr
 	}
 
 	for _, pod := range a.PFacts.Detail {
+		a.Log.Info("Starting to look at pod", "pod", pod.name)
+
+		sout, serr, err := a.PRunner.ExecInPod(ctx, pod.name, ServerContainer, "/opt/vertica/sbin/vertica_agent", "status")
+		a.Log.Info("vertica_agent status", "stdout", sout, "stderr", serr, "err", err)
 		if pod.agentRunning {
+			a.Log.Info("Agent is running, skipping")
 			continue
 		}
 		// Only start the agent for pods that have been added to a database
 		if !pod.dbExists.IsTrue() {
+			a.Log.Info("No database exists, skipping")
 			continue
 		}
 		// We don't start the vertica agent if running ipv6 since the agent
 		// currently doesn't work in that mode.  This can be removed once
 		// that is addressed.
 		if net.IsIPv6(pod.podIP) {
+			a.Log.Info("Agent isn't supported on ipv6")
 			continue
 		}
+		a.Log.Info("Starting agent...")
 		if err := a.startAgentInPod(ctx, pod); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -75,6 +83,7 @@ func (a *AgentReconciler) startAgentInPod(ctx context.Context, pod *PodFact) err
 	cmd := []string{
 		"sudo", "/opt/vertica/sbin/vertica_agent", "start",
 	}
+	a.Log.Info("Starting agent with command", "cmd", cmd)
 	if _, _, err := a.PRunner.ExecInPod(ctx, pod.name, ServerContainer, cmd...); err != nil {
 		return err
 	}

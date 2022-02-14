@@ -323,7 +323,10 @@ func (p *PodFacts) checkIfAgentRunning(ctx context.Context, vdb *vapi.VerticaDB,
 		return nil
 	}
 
-	if _, _, err := p.PRunner.ExecInPod(ctx, pf.name, ServerContainer, "/opt/vertica/sbin/vertica_agent", "status"); err == nil {
+	if stdout, _, err := p.PRunner.ExecInPod(ctx, pf.name, ServerContainer, "/opt/vertica/sbin/vertica_agent", "status"); err == nil {
+		if strings.Contains(stdout, "sh dead but pid file exists") {
+			return nil
+		}
 		pf.agentRunning = true
 	}
 	return nil
