@@ -72,7 +72,7 @@ make deploy
 
 17. Pre-push the vertica server image
 
-push-to-kind.sh -i vertica/vertica-k8s:latest
+scripts/push-to-kind.sh -i vertica/vertica-k8s:latest
 
 18. Create a minIO tenants.  This will serve as the communal path.
 
