@@ -88,6 +88,9 @@ type PodFact struct {
 	// if installation has occurred and the initPolicy is not ScheduleOnly.
 	compat21NodeName string
 
+	// Is the agent running in this pod?
+	agentRunning bool
+
 	// True if the end user license agreement has been accepted
 	eulaAccepted tristate.TriState
 
@@ -208,6 +211,7 @@ func (p *PodFacts) collectPodByStsIndex(ctx context.Context, vdb *vapi.VerticaDB
 		p.checkLogrotateExists,
 		p.checkIsLogrotateWritable,
 		p.checkThatConfigShareExists,
+		p.checkIfAgentRunning,
 	}
 
 	for _, fn := range fns {
@@ -309,6 +313,18 @@ func (p *PodFacts) checkThatConfigShareExists(ctx context.Context, vdb *vapi.Ver
 		if _, _, err := p.PRunner.ExecInPod(ctx, pf.name, names.ServerContainer, "test", "-d", paths.ConfigSharePath); err == nil {
 			pf.configShareExists = true
 		}
+	}
+	return nil
+}
+
+func (p *PodFacts) checkIfAgentRunning(ctx context.Context, vdb *vapi.VerticaDB, pf *PodFact) error {
+	pf.agentRunning = false
+	if !pf.isPodRunning {
+		return nil
+	}
+
+	if _, _, err := p.PRunner.ExecInPod(ctx, pf.name, ServerContainer, "/opt/vertica/sbin/vertica_agent", "status"); err == nil {
+		pf.agentRunning = true
 	}
 	return nil
 }
