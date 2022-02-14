@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: console
+spec:
+  selector:
+    vertica.com/purpose: console
+  ports:
+    - protocol: TCP
+      port: 5450
+  clusterIP: None
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: console
+  namespace: system
+  labels:
+    vertica.com/purpose: console
+spec:
+  selector:
+    matchLabels:
+      vertica.com/purpose: console
+  serviceName:  console
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        vertica.com/purpose: console
+        app.kubernetes.io/name: verticadb-operator
+    spec:
+      containers:
+      - image: console
+        name: console
+        securityContext:
+          allowPrivilegeEscalation: false
+      serviceAccountName: controller-manager
+      terminationGracePeriodSeconds: 0

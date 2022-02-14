@@ -85,6 +85,8 @@ export VERTICA_IMG
 # Image URL to use for the logger sidecar
 VLOGGER_IMG ?= vertica-logger:$(VLOGGER_VERSION)
 export VLOGGER_IMG
+CONSOLE_IMG ?= vertica-console:$(TAG)
+export CONSOLE_IMG
 # The port number for the local registry
 REG_PORT ?= 5000
 # Image URL to use for the bundle.  We special case kind because to use it with
@@ -272,6 +274,9 @@ docker-build-operator: test ## Build operator docker image with the manager.
 docker-build-vlogger:  ## Build vertica logger docker image
 	docker build -t ${VLOGGER_IMG} -f docker-vlogger/Dockerfile .
 
+docker-build-console: ## Build vertica console (MC) docker image
+	docker build -t ${CONSOLE_IMG} docker-console/
+
 docker-push-operator: ## Push operator docker image with the manager.
 ifeq ($(shell $(KIND_CHECK)), 0)
 	docker push ${OPERATOR_IMG}
@@ -284,6 +289,13 @@ ifeq ($(shell $(KIND_CHECK)), 0)
 	docker push ${VLOGGER_IMG}
 else
 	scripts/push-to-kind.sh -i ${VLOGGER_IMG}
+endif
+
+docker-push-console: ## Push vertica console (MC) docker image
+ifeq ($(shell $(KIND_CHECK)), 0)
+	docker push ${CONSOLE_IMG}
+else
+	scripts/push-to-kind.sh -i ${CONSOLE_IMG}
 endif
 
 .PHONY: docker-build-vertica
@@ -357,7 +369,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 deploy-operator: manifests kustomize ## Using helm or olm, deploy the operator in the K8s cluster
 ifeq ($(DEPLOY_WITH), helm)
-	helm install --wait -n $(NAMESPACE) $(HELM_RELEASE_NAME) $(OPERATOR_CHART) --set image.name=${OPERATOR_IMG} --set logging.dev=${DEV_MODE} $(HELM_OVERRIDES)
+	helm install --wait -n $(NAMESPACE) $(HELM_RELEASE_NAME) $(OPERATOR_CHART) --set image.name=${OPERATOR_IMG} --set logging.dev=${DEV_MODE} --set console.image=$(CONSOLE_IMG) $(HELM_OVERRIDES)
 	scripts/wait-for-webhook.sh -n $(NAMESPACE) -t 60
 else ifeq ($(DEPLOY_WITH), olm)
 	scripts/deploy-olm.sh -n $(NAMESPACE) $(OLM_TEST_CATALOG_SOURCE)

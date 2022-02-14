@@ -57,6 +57,9 @@ sed -i "s/--maxfilerotation=.*/--maxfilerotation={{ .Values.logging.maxFileRotat
 sed -i "s/--level=.*/--level={{ .Values.logging.level }}/" $TEMPLATE_DIR/verticadb-operator-controller-manager-deployment.yaml
 sed -i "s/--dev=.*/--dev={{ .Values.logging.dev }}/" $TEMPLATE_DIR/verticadb-operator-controller-manager-deployment.yaml
 
+# 7.  Template for the console
+sed -i "s/image: console/image: '{{ .Values.console.image }}'/" $TEMPLATE_DIR/verticadb-operator-console-statefulset.yaml
+
 # Delete openshift clusterRole and clusterRoleBinding files
 rm $TEMPLATE_DIR/verticadb-operator-openshift-cluster-role-cr.yaml 
 rm $TEMPLATE_DIR/verticadb-operator-openshift-cluster-rolebinding-crb.yaml
