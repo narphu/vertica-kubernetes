@@ -48,9 +48,17 @@ sudo install -o root -g root -m 0755 kubens /usr/local/bin/kubens
 
 10. Change directory in your shell to this git repository
 
-11. Start kubernetes-in-docker (kind)
+11a. Remove an old kind cluster (if these steps were done before).
 
-scripts/kind.sh init cluster1
+scripts.kind.sh term cluster1
+
+11b. Start kubernetes-in-docker (kind).
+
+scripts/kind.sh init cluster1  
+
+If you intend to use nodePort, use the the following command instead:
+
+scripts/kind.sh -p 30001 init cluster1  
 
 12. Setup minio in k8s
 
@@ -95,6 +103,9 @@ kubectl apply -f config/samples/v1beta1_verticadb.yaml
 
 kubectl wait --for=condition=DBInitialized=true vdb/verticadb-sample --timeout 600s
 
+
+If you are going to use nodePort skip the next 2 steps.
+
 22. Expose the MC so you can access it on your localhost
 
 scripts/expose-console.sh
@@ -102,3 +113,13 @@ scripts/expose-console.sh
 23.  Open up MC in your webbrowser
 
 https://localhost:5450/
+
+If you are going to use nodePort do these two steps instead of the last two.
+
+24.  Update Service object to be NodePort
+
+kubectl patch svc verticadb-operator-console --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"},{"op":"replace","path":"/spec/ports/0/nodePort","value":30001}]]'
+
+25. Open up MC in your webbrowser.  Pay attention to the port number it is different than in step 23.  5433 is the port on your hosts that maps to 30001 (in docker) that was setup when creating the kind cluster.
+
+https://localhost:5433/
