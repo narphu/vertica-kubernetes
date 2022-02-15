@@ -58,7 +58,10 @@ sed -i "s/--level=.*/--level={{ .Values.logging.level }}/" $TEMPLATE_DIR/vertica
 sed -i "s/--dev=.*/--dev={{ .Values.logging.dev }}/" $TEMPLATE_DIR/verticadb-operator-controller-manager-deployment.yaml
 
 # 7.  Template for the console
-sed -i "s/image: console/image: '{{ .Values.console.image }}'/" $TEMPLATE_DIR/verticadb-operator-console-statefulset.yaml
+sed -i'' -i "s/image: console/image: '{{ .Values.mc.consoleImage }}'/" $TEMPLATE_DIR/verticadb-operator-console-statefulset.yaml
+sed -i'' -i "s/image: mcclient/image: '{{ .Values.mc.clientImage }}'/" $TEMPLATE_DIR/verticadb-operator-init-mc-job.yaml
+sed -i'' -i "s/webui_url/https:\/\/verticadb-operator-console-0.verticadb-operator-console.{{ .Release.Namespace }}.svc.cluster.local:5450\/webui/" $TEMPLATE_DIR/verticadb-operator-init-mc-job.yaml
+sed -i'' -i "s/replace_password_here/{{ .Values.mc.initialPassword }}/" $TEMPLATE_DIR/verticadb-operator-init-mc-job.yaml
 
 # Delete openshift clusterRole and clusterRoleBinding files
 rm $TEMPLATE_DIR/verticadb-operator-openshift-cluster-role-cr.yaml 

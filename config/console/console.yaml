@@ -40,6 +40,11 @@ spec:
         - mountPath: /opt/vconsole/mcdb
           name: console-data
           subPath: mcdb
+        readinessProbe:
+          httpGet:
+            path: /webui
+            port: 5450
+            scheme: HTTPS
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 0
   volumeClaimTemplates:

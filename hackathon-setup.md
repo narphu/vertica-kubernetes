@@ -68,25 +68,27 @@ scripts/setup-minio.sh -o
 
 make install-cert-manager
 
-14. Copy console rpm to docker-console/package/vertica-console-x86_64.RHEL6.latest.rpm
+14. Copy console rpm to docker-console/packages/vertica-console-x86_64.RHEL6.latest.rpm.
 
-15. Build the operator and console containers
+15. Copy MCClient.jar to docker-mcclient/packages
 
-make docker-build-operator docker-build-console docker-push-operator docker-push-console
+16. Build the operator and console containers
 
-16. Deploy the operator and the console
+make docker-build-operator docker-build-console docker-build-mcclient docker-push-operator docker-push-console docker-push-mcclient
+
+17. Deploy the operator and the console
 
 make deploy
 
-17. Pre-push the vertica server image
+18. Pre-push the vertica server image
 
 scripts/push-to-kind.sh -i vertica/vertica-k8s:latest
 
-18. Create a minIO tenants.  This will serve as the communal path.
+19. Create a minIO tenants.  This will serve as the communal path.
 
 kubectl apply -f config/samples/minio.yaml
 
-19. Wait for minIO to come up.  Run this in a loop until you see one of the pods have STATUS column set to completed.
+20. Wait for minIO to come up.  Run this in a loop until you see one of the pods have STATUS column set to completed.
 
 kubectl get pods --selector job-name=create-s3-bucket
 NAME                     READY   STATUS      RESTARTS   AGE
@@ -95,31 +97,31 @@ create-s3-bucket-bbtpp   0/1     Error       0          52s
 create-s3-bucket-cvz5q   0/1     Error       0          104s
 create-s3-bucket-jppz6   0/1     Completed   0          22s
 
-20. Create the Vertica DB
+21. Create the Vertica DB
 
 kubectl apply -f config/samples/v1beta1_verticadb.yaml
 
-21.  Wait for the database to be created
+22.  Wait for the database to be created
 
 kubectl wait --for=condition=DBInitialized=true vdb/verticadb-sample --timeout 600s
 
 
 If you are going to use nodePort skip the next 2 steps.
 
-22. Expose the MC so you can access it on your localhost
+23. Expose the MC so you can access it on your localhost
 
 scripts/expose-console.sh
 
-23.  Open up MC in your webbrowser
+26.  Open up MC in your webbrowser
 
 https://localhost:5450/
 
 If you are going to use nodePort do these two steps instead of the last two.
 
-24.  Update Service object to be NodePort
+27.  Update Service object to be NodePort
 
 kubectl patch svc verticadb-operator-console --type='json' -p '[{"op":"replace","path":"/spec/type","value":"NodePort"},{"op":"replace","path":"/spec/ports/0/nodePort","value":30001}]]'
 
-25. Open up MC in your webbrowser.  Pay attention to the port number it is different than in step 23.  5433 is the port on your hosts that maps to 30001 (in docker) that was setup when creating the kind cluster.
+28. Open up MC in your webbrowser.  Pay attention to the port number it is different than in step 23.  5433 is the port on your hosts that maps to 30001 (in docker) that was setup when creating the kind cluster.
 
 https://localhost:5433/
