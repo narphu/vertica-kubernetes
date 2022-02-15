@@ -12,7 +12,13 @@ RUN set -x \
 
 EXPOSE 5450
 
-VOLUME /opt/vconsole/config
+# We will setup a PV for the /config and /mcdb directories.  We need to save
+# the contents of those so that we have something to seed when we start the
+# container the first time.
+RUN set -x \
+  && mkdir -p /tmp/pv-seed \
+  && cp -r /opt/vconsole/config /tmp/pv-seed \
+  && cp -r /opt/vconsole/mcdb /tmp/pv-seed
 
 RUN /usr/sbin/groupadd -r verticadba \
   && /usr/sbin/useradd -r -m -s /bin/bash -g verticadba dbadmin

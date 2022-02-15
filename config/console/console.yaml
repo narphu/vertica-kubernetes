@@ -34,5 +34,23 @@ spec:
         name: console
         securityContext:
           allowPrivilegeEscalation: false
+        volumeMounts:
+        - mountPath: /opt/vconsole/config
+          name: console-data
+          subPath: config
+        - mountPath: /opt/vconsole/mcdb
+          name: console-data
+          subPath: mcdb
       serviceAccountName: controller-manager
       terminationGracePeriodSeconds: 0
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: console-data
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: 100Mi

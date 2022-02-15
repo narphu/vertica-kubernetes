@@ -387,6 +387,7 @@ endif
 
 undeploy-operator: ## Undeploy operator that was previously deployed
 	scripts/undeploy.sh -n $(NAMESPACE)
+	kubectl delete pvc console-data-verticadb-operator-console-0 || :
 
 deploy: deploy-operator
 
