@@ -11,6 +11,43 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: script-init-mc
+data:
+  entrypoint.sh: |-
+    #!/bin/bash
+    
+    set +o errexit
+    set -o xtrace
+
+    WEB_URL=$1
+    INITIAL_PASSWORD=$2
+
+    OP=$(java -jar /jars/MCClient.jar \
+              -configure \
+              -data_path /data \
+              -catalog_path /data \
+              -group_id verticadba \
+              -home_dir /home/dbadmin \
+              -license_dir /home/dbadmin/licensing/ce \
+              -mc_dbadmin_user dbadmin \
+              -mc_dbadmin_pwd $INITIAL_PASSWORD \
+              -mc_port 5450 \
+              -mc_url $WEB_URL 2>&1)
+     RC=$?
+     echo $OP
+
+     # It is possible that we have already set up but fail waiting for the MC
+     # to restart.  This error message indicates everything is already setup.
+     if [[ $OP =~ "MC master passphrase already captured" ]]
+     then
+       echo "MC already setup.  Exiting cleanly."
+       exit 0
+     fi
+     exit $RC
+---
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -21,32 +58,23 @@ spec:
   ttlSecondsAfterFinished: 360
   template:
     spec:
+      restartPolicy: Never
       containers:
         - name: mcclient
           image: mcclient
           command:
             [
-              "java",
-              "-jar",
-              "/jars/MCClient.jar",
-              "-configure",
-              "-data_path",
-              "/data",
-              "-catalog_path",
-              "/data",
-              "-group_id",
-              "verticadba",
-              "-home_dir",
-              "/home/dbadmin",
-              "-license_dir",
-              "/home/dbadmin/licensing/ce",
-              "-mc_dbadmin_user",
-              "dbadmin",
-              "-mc_dbadmin_pwd",
-              "replace_password_here",
-              "-mc_port",
-              "5450",
-              "-mc_url",
-              "webui_url"
+              "/bin/entrypoint.sh",
+              "webui_url",
+              "replace_password_here"
             ]
-      restartPolicy: Never
+          volumeMounts:
+          - name: entrypoint-volume
+            mountPath: /bin/entrypoint.sh
+            readOnly: true
+            subPath: entrypoint.sh
+      volumes:
+      - name: entrypoint-volume
+        configMap:
+          defaultMode: 0777
+          name: verticadb-operator-script-init-mc
