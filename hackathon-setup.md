@@ -68,7 +68,7 @@ scripts/setup-minio.sh -o
 
 make install-cert-manager
 
-14. Copy console rpm to docker-console/packages/vertica-console-x86_64.RHEL6.latest.rpm.
+14. Download a copy of the MC for version 10.0.0.  Copy console rpm to docker-console/packages/vertica-console-x86_64.RHEL6.latest.rpm.
 
 15. Copy MCClient.jar to docker-mcclient/packages and docker-console/packages
 
@@ -119,3 +119,5 @@ scripts/expose-console.sh
 26.  Open up MC in your webbrowser
 
 https://localhost:5450/
+
+27.  The MC database get imported by the operator.  So you need to wait a minute or two after create db for it to be visible in the MC.
