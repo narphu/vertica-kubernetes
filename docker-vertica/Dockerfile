@@ -87,16 +87,16 @@ RUN set -x \
   && chmod 777 -R /opt/vertica
 
 ##############################################################################################
-FROM centos:centos${OS_VERSION}
-
-ARG DBADMIN_GID=5000
-ARG DBADMIN_UID=5000
-
-COPY --from=builder /opt/vertica /opt/vertica
-COPY --from=builder /home/dbadmin /home/dbadmin
-COPY --from=builder /root/.ssh /root/.ssh
-COPY --from=builder /etc/ssh /etc/ssh
-COPY --from=builder /var/spool/cron /var/spool/cron
+#FROM centos:centos${OS_VERSION}
+#
+#ARG DBADMIN_GID=5000
+#ARG DBADMIN_UID=5000
+#
+#COPY --from=builder /opt/vertica /opt/vertica
+#COPY --from=builder /home/dbadmin /home/dbadmin
+#COPY --from=builder /root/.ssh /root/.ssh
+#COPY --from=builder /etc/ssh /etc/ssh
+#COPY --from=builder /var/spool/cron /var/spool/cron
 
 ENV LANG en_US.utf8
 ENV TZ UTC
@@ -111,30 +111,30 @@ RUN set -x \
   && chown -R $DBADMIN_UID:$DBADMIN_GID /home/dbadmin \
   # Update is needed to be confident that we're picking up
   # fixed libraries.  We depend on malware check of container afterwards 
-  && yum -q -y update \
-  && yum -y update --security \
-  # CentOS 8 - enable powertools to fix locales issue
-  && bash -c "if [ \"$(rpm -E %{rhel})\" == '8' ]; then yum install -q -y dnf-plugins-core glibc-locale-source; yum -q config-manager --set-enabled powertools; fi" \
-  && yum install -y \
-  cronie \
-  dialog \
-  iproute \
-  krb5-workstation \
-  mcelog \
-  logrotate \
-  openssh-server \
-  openssh-clients \
-  openssl \
-  sudo \
-  which \
+#  && yum -q -y update \
+#  && yum -y update --security \
+#  # CentOS 8 - enable powertools to fix locales issue
+#  && bash -c "if [ \"$(rpm -E %{rhel})\" == '8' ]; then yum install -q -y dnf-plugins-core glibc-locale-source; yum -q config-manager --set-enabled powertools; fi" \
+#  && yum install -y \
+#  cronie \
+#  dialog \
+#  iproute \
+#  krb5-workstation \
+#  mcelog \
+#  logrotate \
+#  openssh-server \
+#  openssh-clients \
+#  openssl \
+#  sudo \
+#  which \
   # CentOS 8 - fixes - Unsupported locale character encoding: use a utf8 locale, not a ANSI_X3.4-1968 locale
-  && bash -c "if [ \"$(rpm -E %{rhel})\" == '8' ]; then localedef -i en_US -f UTF-8 en_US.UTF-8; fi" \
-  && /usr/sbin/groupadd -r verticadba --gid ${DBADMIN_GID} \
-  && /usr/sbin/useradd -r -m -s /bin/bash -g verticadba --uid ${DBADMIN_UID} dbadmin \
+#  && bash -c "if [ \"$(rpm -E %{rhel})\" == '8' ]; then localedef -i en_US -f UTF-8 en_US.UTF-8; fi" \
+#  && /usr/sbin/groupadd -r verticadba --gid ${DBADMIN_GID} \
+#  && /usr/sbin/useradd -r -m -s /bin/bash -g verticadba --uid ${DBADMIN_UID} dbadmin \
   # Allow passwordless sudo access from dbadmin
   && echo "dbadmin ALL=(ALL) NOPASSWD: ALL" | tee -a /etc/sudoers \
-  && yum clean all \
-  && /bin/rm -rf /var/cache/yum \
+#  && yum clean all \
+#  && /bin/rm -rf /var/cache/yum \
   # Used by the agent to see if networking is enabled.  Empty file is okay
   && touch /etc/sysconfig/network \
   # Permit ssh connections
