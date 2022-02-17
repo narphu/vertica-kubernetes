@@ -18,6 +18,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/go-logr/logr"
 	vapi "github.com/vertica/vertica-kubernetes/api/v1beta1"
@@ -97,6 +98,10 @@ func (m *MCImportDBReconciler) runImportDBCommand(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	apiKey, err := m.getAPIKey(ctx)
+	if err != nil {
+		return err
+	}
 
 	m.VRec.EVRec.Eventf(m.Vdb, corev1.EventTypeNormal, events.MCImport,
 		"Importing the database into the management console")
@@ -105,7 +110,7 @@ func (m *MCImportDBReconciler) runImportDBCommand(ctx context.Context) error {
 		"java",
 		"-jar", "/jars/MCClient.jar",
 		"-import_database",
-		"-api_key", APIKey,
+		"-api_key", apiKey,
 		"-db_admin_user", "dbadmin",
 		"-db_admin_pwd", passwd,
 		"-db_name", m.Vdb.Spec.DBName,
@@ -133,4 +138,17 @@ func (m *MCImportDBReconciler) getIPForNode1() (string, error) {
 func (m *MCImportDBReconciler) getMCUrl() string {
 	return fmt.Sprintf("https://%s.verticadb-operator-console.%s.svc.cluster.local:5450/webui",
 		ConsolePodName, m.Vdb.Namespace)
+}
+
+func (m *MCImportDBReconciler) getAPIKey(ctx context.Context) (string, error) {
+	pf, ok := m.PFacts.findRunningPod()
+	if !ok {
+		return "", fmt.Errorf("could not find running pod")
+	}
+	cmd := []string{
+		"bash", "-c",
+		"cat /opt/vertica/config/apikeys.dat | grep apikey | cut -d':' -f2 | cut -b 3- | cut -d'\"' -f1",
+	}
+	stdout, _, err := m.PRunner.ExecInPod(ctx, pf.name, ServerContainer, cmd...)
+	return strings.TrimSuffix(stdout, "\n"), err
 }
