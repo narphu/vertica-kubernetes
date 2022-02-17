@@ -76,23 +76,29 @@ make install-cert-manager
 
 make docker-build-operator docker-build-console docker-build-mcclient docker-push-operator docker-push-console docker-push-mcclient
 
-17. Set this environment variable if you want to use nodePort.
+17. Get a copy of a Vertica server RPM and copy it to docker-vertica/packages/vertica-x86_64.RHEL6.latest.rpm
+
+18. Build the vertica container
+
+make docker-build-vertica docker-push-vertica
+
+19. Set this environment variable if you want to use nodePort.
 
 export CONSOLE_NODEPORT=30001
 
-18. Deploy the operator and the console
+20. Deploy the operator and the console
 
 make deploy
 
-19. Pre-push the vertica server image
+21. Pre-push the vertica server image
 
 scripts/push-to-kind.sh -i vertica/vertica-k8s:latest
 
-20. Create a minIO tenants.  This will serve as the communal path.
+22. Create a minIO tenants.  This will serve as the communal path.
 
 kubectl apply -f config/samples/minio.yaml
 
-21. Wait for minIO to come up.  Run this in a loop until you see one of the pods have STATUS column set to completed.
+23. Wait for minIO to come up.  Run this in a loop until you see one of the pods have STATUS column set to completed.
 
 kubectl get pods --selector job-name=create-s3-bucket
 NAME                     READY   STATUS      RESTARTS   AGE
@@ -101,23 +107,23 @@ create-s3-bucket-bbtpp   0/1     Error       0          52s
 create-s3-bucket-cvz5q   0/1     Error       0          104s
 create-s3-bucket-jppz6   0/1     Completed   0          22s
 
-22. Create the Vertica DB
+24. Create the Vertica DB
 
 kubectl apply -f config/samples/v1beta1_verticadb.yaml
 
-23.  Wait for the database to be created
+25.  Wait for the database to be created
 
 kubectl wait --for=condition=DBInitialized=true vdb/verticadb-sample --timeout 600s
 
 
 If you are going to use nodePort skip the next 2 steps.
 
-24. If not using node port, expose the MC so you can access it on your localhost
+26. If not using node port, expose the MC so you can access it on your localhost
 
 scripts/expose-console.sh
 
-26.  Open up MC in your webbrowser
+27.  Open up MC in your webbrowser
 
 https://localhost:5450/
 
-27.  The MC database get imported by the operator.  So you need to wait a minute or two after create db for it to be visible in the MC.
+28.  The MC database get imported by the operator.  So you need to wait a minute or two after create db for it to be visible in the MC.
