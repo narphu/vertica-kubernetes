@@ -140,6 +140,8 @@ func (r *VerticaDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		MakeStatusReconciler(r.Client, r.Scheme, log, vdb, &pfacts),
 		// Ensure the vertica agent is running on each pod
 		MakeAgentReconciler(r, log, vdb, prunner, &pfacts),
+		// Import the DB into the MC
+		MakeMCImportDBReconciler(r, log, vdb, prunner, &pfacts),
 		// Handle calls to admintools -t db_add_subcluster
 		MakeDBAddSubclusterReconciler(r, log, vdb, prunner, &pfacts),
 		MakeStatusReconciler(r.Client, r.Scheme, log, vdb, &pfacts),
@@ -166,20 +168,32 @@ func (r *VerticaDBReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 	return res, err
 }
 
+type ClientAccessor interface {
+	// Get(ctx context.Context, key ObjectKey, obj Object) error
+}
+
 // GetSuperuserPassword returns the superuser password if it has been provided
 func (r *VerticaDBReconciler) GetSuperuserPassword(ctx context.Context, vdb *vapi.VerticaDB, log logr.Logger) (string, error) {
+	passwd, err := GetSuperuserPasswordForClient(ctx, r, vdb, log)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			secretName := names.GenSUPasswdSecretName(vdb)
+			r.EVRec.Eventf(vdb, corev1.EventTypeWarning, events.SuperuserPasswordSecretNotFound,
+				"Secret for superuser password '%s' was not found", secretName.Name)
+		}
+	}
+	return passwd, err
+}
+
+func GetSuperuserPasswordForClient(ctx context.Context, rdr client.Reader, vdb *vapi.VerticaDB, log logr.Logger) (string, error) {
 	secret := &corev1.Secret{}
 	passwd := ""
 	secretName := names.GenSUPasswdSecretName(vdb)
 	if secretName.Name == "" {
 		return passwd, nil
 	}
-	err := r.Get(ctx, secretName, secret)
+	err := rdr.Get(ctx, secretName, secret)
 	if err != nil {
-		if errors.IsNotFound(err) {
-			r.EVRec.Eventf(vdb, corev1.EventTypeWarning, events.SuperuserPasswordSecretNotFound,
-				"Secret for superuser password '%s' was not found", secretName.Name)
-		}
 		return passwd, err
 	}
 	pwd, ok := secret.Data[SuperuserPasswordKey]

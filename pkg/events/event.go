@@ -62,4 +62,5 @@ const (
 	KerberosAuthError               = "KerberosAuthError"
 	OperatorUpgrade                 = "OperatorUpgrade"
 	InvalidUpgradePath              = "InvalidUpgradePath"
+	MCImport                        = "MCImport"
 )

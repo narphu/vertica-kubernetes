@@ -8,6 +8,8 @@ spec:
   ports:
     - protocol: TCP
       port: 5450
+      nodePort: template-placeholder
+  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: StatefulSet

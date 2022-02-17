@@ -33,6 +33,10 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 )
 
+const (
+	APIKey = "2i8MetCw6KWoTtJNNpjm9PpcsRrNan0jCNwSGQ"
+)
+
 // InstallReconciler will handle reconcile for install of vertica
 type InstallReconciler struct {
 	VRec           *VerticaDBReconciler
@@ -214,14 +218,15 @@ ZXnpH+PFCk8LdGOQFHMuUwJBANCfIqZlPpAl6qdTiCdNZyx9Ai1nzlbvJqT3gIsg
 TD7AF93srNQghBpiuCcxOjlIzR8Rm9fGO9Nv0tZxwqs3rBE=
 -----END RSA PRIVATE KEY-----
 `
-	apikeys := `[
+	apikeys := fmt.Sprintf(`[
 	{
-		"apikey": "2i8MetCw6KWoTtJNNpjm9PpcsRrNan0jCNwSGQ",
+		"apikey": "%s",
 		"app": "vertica",
 		"level": "admin",
 		"requestor": "master"
 	}
-]`
+]`,
+		APIKey)
 	agentFiles := map[string]string{
 		"/opt/vertica/config/share/agent.cert": agentCert,
 		"/opt/vertica/config/share/agent.key":  agentKey,

@@ -62,6 +62,8 @@ sed -i'' -i "s/image: console/image: '{{ .Values.mc.consoleImage }}'/" $TEMPLATE
 sed -i'' -i "s/image: mcclient/image: '{{ .Values.mc.clientImage }}'/" $TEMPLATE_DIR/verticadb-operator-init-mc-job.yaml
 sed -i'' -i "s/webui_url/https:\/\/verticadb-operator-console-0.verticadb-operator-console.{{ .Release.Namespace }}.svc.cluster.local:5450\/webui/" $TEMPLATE_DIR/verticadb-operator-init-mc-job.yaml
 sed -i'' -i "s/replace_password_here/{{ .Values.mc.initialPassword }}/" $TEMPLATE_DIR/verticadb-operator-init-mc-job.yaml
+sed -i'' -i 's/- nodePort: template-placeholder/{{- if .Values.mc.nodePort }}\n  - nodePort: 30001\n{{- else }}\n  - nodePort: 0\n{{- end }}/' $TEMPLATE_DIR/verticadb-operator-console-svc.yaml
+sed -i'' -i 's/type: ClusterIP/{{- if .Values.mc.nodePort }}\n  type: NodePort\n{{- else }}\n  type: ClusterIP\n{{- end }}/' $TEMPLATE_DIR/verticadb-operator-console-svc.yaml
 
 # Delete openshift clusterRole and clusterRoleBinding files
 rm $TEMPLATE_DIR/verticadb-operator-openshift-cluster-role-cr.yaml 

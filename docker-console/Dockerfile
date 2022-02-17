@@ -23,6 +23,9 @@ RUN set -x \
 RUN /usr/sbin/groupadd -r verticadba \
   && /usr/sbin/useradd -r -m -s /bin/bash -g verticadba dbadmin
 
+ENV PATH "$PATH:/opt/vconsole/vendor/OpenJDK/Zulu/java/1.8u212/jre/bin"
+
 ADD ./docker-entrypoint.sh /root/docker-entrypoint.sh
+ADD ./packages/MCClient.jar /jars/MCClient.jar
 
 ENTRYPOINT ["bash", "/root/docker-entrypoint.sh"]

@@ -677,6 +677,7 @@ const (
 	ImageChangeInProgress    VerticaDBConditionType = "ImageChangeInProgress"
 	OfflineUpgradeInProgress VerticaDBConditionType = "OfflineUpgradeInProgress"
 	OnlineUpgradeInProgress  VerticaDBConditionType = "OnlineUpgradeInProgress"
+	MCImportCompleted        VerticaDBConditionType = "MCImportCompleted"
 )
 
 // Fixed index entries for each condition.
@@ -686,6 +687,7 @@ const (
 	ImageChangeInProgressIndex
 	OfflineUpgradeInProgressIndex
 	OnlineUpgradeInProgressIndex
+	MCImportCompletedIndex
 )
 
 // VerticaDBConditionIndexMap is a map of the VerticaDBConditionType to its
@@ -696,6 +698,7 @@ var VerticaDBConditionIndexMap = map[VerticaDBConditionType]int{
 	ImageChangeInProgress:    ImageChangeInProgressIndex,
 	OfflineUpgradeInProgress: OfflineUpgradeInProgressIndex,
 	OnlineUpgradeInProgress:  OnlineUpgradeInProgressIndex,
+	MCImportCompleted:        MCImportCompletedIndex,
 }
 
 // VerticaDBConditionNameMap is the reverse of VerticaDBConditionIndexMap.  It
@@ -956,5 +959,10 @@ func (v *VerticaDB) RequiresTransientSubcluster() bool {
 // IsOnlineUpgradeInProgress returns true if an online upgrade is in progress
 func (v *VerticaDB) IsOnlineUpgradeInProgress() bool {
 	inx := OnlineUpgradeInProgressIndex
+	return inx < len(v.Status.Conditions) && v.Status.Conditions[inx].Status == corev1.ConditionTrue
+}
+
+func (v *VerticaDB) IsMCImportComplete() bool {
+	inx := MCImportCompletedIndex
 	return inx < len(v.Status.Conditions) && v.Status.Conditions[inx].Status == corev1.ConditionTrue
 }

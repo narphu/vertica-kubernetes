@@ -22,7 +22,7 @@ TAG=latest
 KUBEVER=1.21.1
 IP_FAMILY=ipv4
 LISTEN_ALL_INTERFACES=N
-VSQL_PORT=5433
+MC_PORT=5450
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 REPO_DIR=$(dirname $SCRIPT_DIR)
 KIND=$REPO_DIR/bin/kind
@@ -54,10 +54,9 @@ then
     echo "  -k     Version of Kubernetes to deploy.  Defaults to ${KUBEVER}."
     echo "  -i     IP family of the cluster (ipv4/ipv6). Defaults to ${IP_FAMILY}."
     echo "  -a     If set, listen on all interfaces."
-    echo "  -p     Open port ${VSQL_PORT} on the host.  The given port is a number in"
+    echo "  -p     Open port ${MC_PORT} on the host.  The given port is a number in"
     echo "         the range of 30000-32767.  This option is used if you want"
-    echo "         to use NodePort.  The given port is the port number you use"
-    echo "         in the vdb manifest."
+    echo "         to use NodePort for the console."
     echo "  -r     Use port number for the registry.  Defaults to: $REG_PORT"
     echo "  -x     When terminating kind, skip killing of the registry."
     echo
@@ -107,9 +106,9 @@ EOF
         cat <<- EOF >> $tmpfile
   extraPortMappings:
     - containerPort: $PORT
-      hostPort: $VSQL_PORT
+      hostPort: $MC_PORT
     - containerPort: $(( $PORT + 1 ))
-      hostPort: $(( $VSQL_PORT + 1 ))
+      hostPort: $(( $MC_PORT + 1 ))
 EOF
     fi
     cat $tmpfile

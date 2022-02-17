@@ -28,6 +28,9 @@ mc:
   consoleImage: vertica-console:1.3.0
   # Image that has the MCClient.jar 
   clientImage: vertica-mcclient:1.3.0
+  # Set this to some value if you want the console service object to be setup as
+  # a nodePort
+  nodePort: ''
 
 webhook:
   # The webhook requires a TLS certficate to work.  By default we rely on

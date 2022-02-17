@@ -141,6 +141,10 @@ DEPLOY_WITH?=helm
 # Name of the test OLM catalog that we will create and deploy with in e2e tests
 OLM_TEST_CATALOG_SOURCE=e2e-test-catalog
 
+# Port number to use for the console service object.  If blank then NodePort
+# service is not setup.
+CONSOLE_NODEPORT?=
+
 GOPATH?=${HOME}/go
 TMPDIR?=$(PWD)
 HELM_UNITTEST_PLUGIN_INSTALLED:=$(shell helm plugin list | grep -c '^unittest')
@@ -381,7 +385,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 
 deploy-operator: manifests kustomize ## Using helm or olm, deploy the operator in the K8s cluster
 ifeq ($(DEPLOY_WITH), helm)
-	helm install --wait -n $(NAMESPACE) $(HELM_RELEASE_NAME) $(OPERATOR_CHART) --set image.name=${OPERATOR_IMG} --set logging.dev=${DEV_MODE} --set mc.consoleImage=$(CONSOLE_IMG) --set mc.clientImage=$(MCCLIENT_IMG) $(HELM_OVERRIDES)
+	helm install --wait -n $(NAMESPACE) $(HELM_RELEASE_NAME) $(OPERATOR_CHART) --set image.name=${OPERATOR_IMG} --set logging.dev=${DEV_MODE} --set mc.consoleImage=$(CONSOLE_IMG) --set mc.clientImage=$(MCCLIENT_IMG) --set mc.nodePort=$(CONSOLE_NODEPORT) $(HELM_OVERRIDES)
 	scripts/wait-for-webhook.sh -n $(NAMESPACE) -t 60
 else ifeq ($(DEPLOY_WITH), olm)
 	scripts/deploy-olm.sh -n $(NAMESPACE) $(OLM_TEST_CATALOG_SOURCE)
