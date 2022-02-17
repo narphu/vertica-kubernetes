@@ -6,7 +6,7 @@ ARG VERTICA_RPM="vertica-console-x86_64.RHEL6.latest.rpm"
 ADD ./packages/${VERTICA_RPM} /tmp/
 
 RUN set -x \
-  && yum install -y net-tools \
+  && yum install -y net-tools iproute \
   && yum localinstall -q -y /tmp/${VERTICA_RPM} \
   && yum clean all
 
@@ -23,7 +23,13 @@ RUN set -x \
 RUN /usr/sbin/groupadd -r verticadba \
   && /usr/sbin/useradd -r -m -s /bin/bash -g verticadba dbadmin
 
+RUN mkdir -p /derby \
+  && cd /derby \
+  && curl -LO https://dlcdn.apache.org//db/derby/db-derby-10.14.2.0/db-derby-10.14.2.0-lib.tar.gz \
+  && tar zxvf db-derby-10.14.2.0-lib.tar.gz
+ 
 ENV PATH "$PATH:/opt/vconsole/vendor/OpenJDK/Zulu/java/1.8u212/jre/bin"
+ENV CLASSPATH "/derby/db-derby-10.14.2.0-lib/lib/derby.jar:/derby/db-derby-10.14.2.0-lib/lib/derbytools.jar:/derby/db-derby-10.14.2.0-lib/lib/derbyoptionaltools.jar:/derby/db-derby-10.14.2.0-lib/lib/derbyshared.jar:."
 
 ADD ./docker-entrypoint.sh /root/docker-entrypoint.sh
 ADD ./packages/MCClient.jar /jars/MCClient.jar
