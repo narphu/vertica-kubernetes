@@ -1,26 +1,37 @@
-VERTICA_RPM?=$(notdir $(wildcard packages/vertica*.rpm))
+VERTICA_X86_RPM?=$(notdir $(wildcard packages/vertica*.x86_64.rpm))
+VERTICA_ARM64_RPM?=$(notdir $(wildcard packages/vertica*.aarch64.rpm))
 BUILDER_OS_NAME?=almalinux
 BUILDER_OS_VERSION?=8
 BASE_OS_NAME?=rockylinux
 BASE_OS_VERSION?=9
 VERTICA_IMG?=vertica-k8s
 MINIMAL_VERTICA_IMG?=
-VERTICA_VERSION?=$(shell rpm --nosignature -qp --queryformat '%{VERSION}-%{RELEASE}' packages/$(VERTICA_RPM))
 VERTICA_ADDITIONAL_DOCKER_BUILD_OPTIONS?=
 
-all: docker-build-vertica
+VERTICA_X86_VERSION?=$(shell rpm --nosignature -qp --queryformat '%{VERSION}-%{RELEASE}' packages/${VERTICA_X86_RPM})
+VERTICA_ARM_VERSION?=$(shell rpm --nosignature -qp --queryformat '%{VERSION}-%{RELEASE}' packages/${VERTICA_ARM64_RPM})
 
-.PHONY: docker-build-vertica
+pre: 
+	ifneq (${VERTICA_ARM_VERSION}, ${VERTICA_X86_VERSION})
+		@echo "RPM version mismatch between architectures"
+		exit 0
+	endif
+
+all: pre docker-build-vertica
+
+.PHONY: pre docker-build-vertica
 docker-build-vertica: Dockerfile packages/package-checksum-patcher.py
 	docker pull ${BASE_OS_NAME}:$(BASE_OS_VERSION) ## make sure we use the latest base image
 	docker buildx build \
 		--load \
 		-f Dockerfile \
+		--platform linux/amd64,linux/arm64 \
 		--label minimal=${MINIMAL_VERTICA_IMG} \
 		--label os-version=${BASE_OS_VERSION} \
 		--label vertica-version=${VERTICA_VERSION} \
 		--build-arg MINIMAL=${MINIMAL_VERTICA_IMG} \
-		--build-arg VERTICA_RPM=${VERTICA_RPM} \
+		--build-arg VERTICA_X86_RPM=${VERTICA_X86_RPM} \
+		--build-arg VERTICA_ARM64_RPM=${VERTICA_ARM64_RPM} \
 		--build-arg BASE_OS_NAME=${BASE_OS_NAME} \
 		--build-arg BASE_OS_VERSION=${BASE_OS_VERSION} \
 		--build-arg BUILDER_OS_NAME=${BUILDER_OS_NAME} \
