@@ -15,6 +15,7 @@
 # follow the idiomatic way in Kubernetes of logging to stdout.
 
 ARG ALPINE_VERSION
+ARG TARGETARCH
 FROM alpine:${ALPINE_VERSION}
 
 # Tini - A tiny but valid init for containers

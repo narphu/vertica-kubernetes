@@ -55,7 +55,7 @@ yum install -y --nobest \
 /usr/sbin/useradd -r -m -s /bin/bash -g verticadba dbadmin
 if [ "amd64" = "$TARGETARCH" ]; then
     yum localinstall -y /tmp/${VERTICA_X86_RPM}
-elif [ "arm" = "$TARGETARCH" || "arm64" = "$TARGETARCH" ]; then
+elif [ "arm" = "$TARGETARCH" ] || [ "arm64" = "$TARGETARCH" ]; then
     yum localinstall -y /tmp/${VERTICA_ARM64_RPM}
 fi
 mkdir -p /opt/vertica/config/https_certs
@@ -79,6 +79,7 @@ rm -rf /opt/vertica/lib64
 yum clean all
 sh /tmp/cleanup.sh
 EOF
+
 ##############################################################################################
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION} as initial
 
