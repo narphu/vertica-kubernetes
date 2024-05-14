@@ -161,6 +161,13 @@ E2E_TEST_DIRS?=tests/e2e-leg-1
 # Additional arguments to pass to 'kubectl kuttl'
 E2E_ADDITIONAL_ARGS?=
 
+# Target Architecture that the docker image can run on
+# By Default: linux/amd64,linux/arm64
+# If you wish to build the image targeting other platforms you can use the --platform flag: https://docs.docker.com/build/building/multi-platform/
+# (i.e. docker buildx build --platform=linux/arm64 ). However, you must enable docker buildKit for it.
+# More info: https://docs.docker.com/develop/develop-images/build_enhancements/
+TARGET_ARCH?=linux/amd64,linux/arm64
+
 #
 # Deployment Variables
 # ====================
@@ -397,6 +404,7 @@ docker-build-vlogger:  ## Build vertica logger docker image
 		-t ${VLOGGER_IMG} \
 		--load \
 		--build-arg BASE_IMG=${VLOGGER_BASE_IMG} \
+		--platform ${TARGET_ARCH} \
 		--build-arg ALPINE_VERSION=${VLOGGER_ALPINE_VERSION} \
 		-f docker-vlogger/Dockerfile .
 
@@ -443,6 +451,7 @@ docker-build-vertica-v2: docker-vertica-v2/Dockerfile ## Build next generation v
 	&& make \
 		VERTICA_IMG=${VERTICA_IMG} \
 		MINIMAL_VERTICA_IMG=${MINIMAL_VERTICA_IMG} \
+		TARGET_ARCH=${TARGET_ARCH} \
 		VERTICA_ADDITIONAL_DOCKER_BUILD_OPTIONS=${VERTICA_ADDITIONAL_DOCKER_BUILD_OPTIONS}
 
 .PHONY: docker-push-vertica

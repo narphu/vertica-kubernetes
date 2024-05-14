@@ -92,7 +92,7 @@ jobs:
       uses: docker/login-action@v3
       if: ${{ startsWith(steps.full_vertica_image.outputs.value, 'docker.io') }}
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: nprabhu2195
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - uses: actions/checkout@v4
@@ -199,7 +199,7 @@ jobs:
       uses: docker/login-action@v3
       if: ${{ inputs.legacy_vertica_image != '' && startsWith(inputs.legacy_vertica_image, 'docker.io') }}
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: nprabhu2195
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - uses: actions/checkout@v4
@@ -273,7 +273,7 @@ jobs:
       uses: docker/login-action@v3
       if: ${{ startsWith(steps.minimal_vertica_image.outputs.value, 'docker.io') }}
       with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        username: nprabhu2195
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - uses: actions/checkout@v4

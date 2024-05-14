@@ -15,6 +15,7 @@
 # follow the idiomatic way in Kubernetes of logging to stdout.
 
 ARG ALPINE_VERSION
+ARG TARGETARCH
 ARG BASE_IMG
 FROM ${BASE_IMG}:${ALPINE_VERSION}
 
