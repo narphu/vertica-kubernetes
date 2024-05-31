@@ -15,15 +15,15 @@ ARG BASE_OS_NAME
 ARG BASE_OS_VERSION
 ARG BUILDER_OS_NAME
 ARG BUILDER_OS_VERSION
-ARG TARGETARCH
-ARG MINIMAL=""
-FROM --platform=${BUILDPLATFORM:-linux/amd64} ${BUILDER_OS_NAME}:${BUILDER_OS_VERSION} as builder
 
+ARG MINIMAL=""
+FROM ${BUILDER_OS_NAME}:${BUILDER_OS_VERSION} as builder
+# --platform=${BUILDPLATFORM:-linux/amd64}
 ARG VERTICA_X86_RPM
 ARG VERTICA_ARM64_RPM
 ARG MINIMAL
 
-COPY ./packages/${VERTICA_RPM} /tmp/
+COPY ./packages/* /tmp/
 # this is a script which removes unnecessary stuff from the
 # container image
 COPY ./packages/cleanup.sh /tmp/
@@ -42,43 +42,46 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # Using --nobest to make it easier yum install to work. This stage isn't used
 # for the final image, so any package is good enough. We just need to install
 # the vertica rpm and copy that over.
-RUN <<EOF 
-set -x
-yum -y update
-yum install -y --nobest \
+ARG TARGETARCH
+RUN set -x \
+  && yum -y update \
+  && yum install -y --nobest \
   dialog \
   glibc \
   glibc-langpack-en \
   iproute \
-  openssl
-/usr/sbin/groupadd -r verticadba
-/usr/sbin/useradd -r -m -s /bin/bash -g verticadba dbadmin
-if [ "amd64" = "$TARGETARCH" ]; then
-    yum localinstall -y /tmp/${VERTICA_X86_RPM}
-elif [ "arm" = "$TARGETARCH" ] || [ "arm64" = "$TARGETARCH" ]; then
-    yum localinstall -y /tmp/${VERTICA_ARM64_RPM}
-fi
-mkdir -p /opt/vertica/config/https_certs
-cp /tmp/httpstls.json /opt/vertica/config/https_certs/
-/opt/vertica/sbin/install_vertica \
-  --accept-eula \
-  --debug \
-  --dba-user-password-disabled \
-  --failure-threshold NONE \
-  --license CE \
-  --hosts 127.0.0.1 \
-  --no-system-configuration \
-  --ignore-install-config \
-  -U \
-  --data-dir /home/dbadmin
-mkdir -p /home/dbadmin/licensing/ce
-cp -r /opt/vertica/config/licensing/* /home/dbadmin/licensing/ce/
-chown -R dbadmin:verticadba /opt/vertica
-# reduce the size of the final image
-rm -rf /opt/vertica/lib64
-yum clean all
-sh /tmp/cleanup.sh
-EOF
+  openssl \
+  && /usr/sbin/groupadd -r verticadba \
+  && /usr/sbin/useradd -r -m -s /bin/bash -g verticadba dbadmin \
+  && ls /tmp/ \
+  && if [[ "$TARGETARCH" == "arm64" ]] ; then \
+      uname -m && \
+      yum localinstall -y /tmp/${VERTICA_ARM64_RPM} ; \
+    elif [[ "$TARGETARCH" == "amd64" ]] ; then \
+      yum localinstall -y /tmp/${VERTICA_X86_RPM} ; \
+    else \
+      exit 1; \
+    fi \
+  && mkdir -p /opt/vertica/config/https_certs \
+  && cp /tmp/httpstls.json /opt/vertica/config/https_certs/ \
+  && /opt/vertica/sbin/install_vertica \
+    --accept-eula \
+    --debug \
+    --dba-user-password-disabled \
+    --failure-threshold NONE \
+    --license CE \
+    --hosts 127.0.0.1 \
+    --no-system-configuration \
+    --ignore-install-config \
+    -U \
+    --data-dir /home/dbadmin \
+  && mkdir -p /home/dbadmin/licensing/ce \
+  && cp -r /opt/vertica/config/licensing/* /home/dbadmin/licensing/ce/ \
+  && chown -R dbadmin:verticadba /opt/vertica \
+  # reduce the size of the final image
+  && rm -rf /opt/vertica/lib64 \
+  && yum clean all \
+  && sh /tmp/cleanup.sh
 
 ##############################################################################################
 FROM ${BASE_OS_NAME}:${BASE_OS_VERSION} as initial
