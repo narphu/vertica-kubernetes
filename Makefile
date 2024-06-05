@@ -697,21 +697,21 @@ OPM = $(shell pwd)/bin/opm
 OPM_VERSION = 1.26.5
 opm: $(OPM)  ## Download opm locally if necessary
 $(OPM):
-	curl --silent --show-error --retry 10 --retry-max-time 1800 --location --fail "https://github.com/operator-framework/operator-registry/releases/download/v$(OPM_VERSION)/linux-amd64-opm" --output $(OPM)
+	curl --silent --show-error --retry 10 --retry-max-time 1800 --location --fail "https://github.com/operator-framework/operator-registry/releases/download/v$(OPM_VERSION)/$(GOOS)-$(GOARCH)-opm" --output $(OPM)
 	chmod +x $(OPM)
 
 OPERATOR_SDK = $(shell pwd)/bin/operator-sdk
 OPERATOR_SDK_VERSION = 1.28.0
 operator-sdk: $(OPERATOR_SDK)  ## Download operator-sdk locally if necessary
 $(OPERATOR_SDK):
-	curl --silent --show-error --retry 10 --retry-max-time 1800 --location --fail "https://github.com/operator-framework/operator-sdk/releases/download/v$(OPERATOR_SDK_VERSION)/operator-sdk_linux_amd64" --output $(OPERATOR_SDK)
+	curl --silent --show-error --retry 10 --retry-max-time 1800 --location --fail "https://github.com/operator-framework/operator-sdk/releases/download/v$(OPERATOR_SDK_VERSION)/operator-sdk_$(GOOS)_$(GOARCH)" --output $(OPERATOR_SDK)
 	chmod +x $(OPERATOR_SDK)
 
 ISTIOCTL = $(shell pwd)/bin/istioctl
 ISTIOCTL_VERSION = 1.17.2
 istioctl: $(ISTIOCTL)  ## Download istioctl locally if necessary
 $(ISTIOCTL):
-	curl --silent --show-error --retry 10 --retry-max-time 1800 --location --fail "https://github.com/istio/istio/releases/download/$(ISTIOCTL_VERSION)/istio-$(ISTIOCTL_VERSION)-linux-amd64.tar.gz" | tar xvfz - istio-$(ISTIOCTL_VERSION)/bin/istioctl -O > $(ISTIOCTL)
+	curl --silent --show-error --retry 10 --retry-max-time 1800 --location --fail "https://github.com/istio/istio/releases/download/$(ISTIOCTL_VERSION)/istio-$(ISTIOCTL_VERSION)-$(GOOS)-$(GOARCH).tar.gz" | tar xvfz - istio-$(ISTIOCTL_VERSION)/bin/istioctl -O > $(ISTIOCTL)
 	chmod +x $(ISTIOCTL)
 
 
@@ -725,7 +725,7 @@ CHANGIE = $(shell pwd)/bin/changie
 CHANGIE_VERSION = 1.2.0
 changie: $(CHANGIE) ## Download changie locally if necessary
 $(CHANGIE): $(LOCALBIN) ## Download changie locally if necessary
-	curl --silent --show-error --location --fail https://github.com/miniscruff/changie/releases/download/v$(CHANGIE_VERSION)/changie_$(CHANGIE_VERSION)_linux_amd64.tar.gz | tar xvfz - changie
+	curl --silent --show-error --location --fail https://github.com/miniscruff/changie/releases/download/v$(CHANGIE_VERSION)/changie_$(CHANGIE_VERSION)_$(GOOS)_$(GOARCH).tar.gz | tar xvfz - changie 
 	mv changie $(CHANGIE)
 	chmod +x $(CHANGIE)
 
