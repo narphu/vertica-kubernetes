@@ -236,7 +236,10 @@ jobs:
   e2e-leg-3-admintools:
     if: ${{ inputs.e2e_test_suites == 'all' || inputs.e2e_test_suites == 'admintools leg 3' || inputs.e2e_test_suites == '' }}
     needs: [build]
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ ubuntu-latest, ARM64 ]
+    runs-on: ${{ matrix.runner }} 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -466,7 +469,10 @@ jobs:
   e2e-server-upgrade-admintools:
     if: ${{ inputs.e2e_test_suites == 'all' || inputs.e2e_test_suites == 'admintools server upgrade' || inputs.e2e_test_suites == '' }}
     needs: [build]
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ ubuntu-latest, ARM64 ]
+    runs-on: ${{ matrix.runner }} 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -486,7 +492,10 @@ jobs:
   e2e-server-upgrade-vcluster:
     if: ${{ ! github.event.pull_request.head.repo.fork  && (inputs.e2e_test_suites == 'all' || inputs.e2e_test_suites == 'vcluster server upgrade' || inputs.e2e_test_suites == '')}}
     needs: [build]
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        runner: [ ubuntu-latest, ARM64 ]
+    runs-on: ${{ matrix.runner }} 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
