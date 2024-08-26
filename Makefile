@@ -393,6 +393,7 @@ docker-build-operator: manifests generate fmt vet ## Build operator docker image
 	docker buildx build \
 		--tag ${OPERATOR_IMG} \
 		--load \
+		--platform ${TARGET_ARCH} \
 		--build-arg GO_VERSION=${GO_VERSION} \
 		-f docker-operator/Dockerfile .
 
