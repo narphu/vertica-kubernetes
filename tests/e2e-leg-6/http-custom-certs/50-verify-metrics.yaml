@@ -17,7 +17,7 @@ metadata:
   name: script-verify-metrics
 data:
   entrypoint.sh: |-
-    #!/bin/bash
+    #!/bin/sh
     set -o xtrace
     set -o errexit
 
@@ -60,7 +60,7 @@ spec:
           restartPolicy: Never
           containers:
             - name: test
-              image: bitnami/kubectl:1.30.4
+              image: alpine/curl:8.9.0
               command: ["/bin/entrypoint.sh"]
               volumeMounts:
                 - name: entrypoint-volume
