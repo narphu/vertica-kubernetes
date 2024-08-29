@@ -87,13 +87,13 @@ jobs:
       legacy_vertica_image: ${{ inputs.legacy_vertica_image }}
       run_security_scan: ${{ inputs.run_security_scan }}
     secrets:
-      DOCKERHUB_USERNAME: nprabhu2195
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   unittests:
     uses: ./.github/workflows/unittests.yml
     secrets:
-      DOCKERHUB_USERNAME: nprabhu2195
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   scorecardtests:
@@ -114,7 +114,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-1'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -134,7 +134,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-1'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -158,7 +158,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-1'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -181,7 +181,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-2'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -201,7 +201,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-2'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -225,7 +225,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-2'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -248,7 +248,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-3'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -267,7 +267,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-3'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -290,7 +290,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-3'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -309,7 +309,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-4'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -334,7 +334,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-4'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -356,7 +356,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-5'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -383,7 +383,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-5'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -410,7 +410,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-6'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -433,7 +433,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-7'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -456,7 +456,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'leg-8'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -504,7 +504,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'server-upgrade'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -527,7 +527,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'server-upgrade'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -550,7 +550,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'operator-upgrade'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -576,7 +576,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'udx'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
@@ -598,7 +598,7 @@ jobs:
         uses: ./.github/actions/run-e2e-leg
         with:
           leg-identifier: 'udx'
-          dockerhub-username: nprabhu2195
+          dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
           dockerhub-token: ${{ secrets.DOCKERHUB_TOKEN }}
           vlogger-image: ${{ needs.build.outputs.vlogger-image }}
           operator-image: ${{ needs.build.outputs.operator-image }}
